@@ -1,0 +1,177 @@
+/* 
+ * File:   Main.cpp
+ * Author: Quinn Mikelson
+ *
+ * Created on August 2, 2015, 12:23 PM
+ */
+#include "src/Onyx.h"
+#include "src/Servo.h"
+#include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <termios.h>
+
+using namespace std;
+
+Onyx MK1; //Initialize Onyx Class
+Servo a,b,c,d,e,f,broadcast;
+void calibrate(int delay);
+
+int main(int argc, char** argv) {
+    MK1.setMode(STARTUP);
+    MK1.setMode(STANDBY);
+    broadcast.OPEN_CONTROLLER(0,1);
+    broadcast.SET_ID(254);
+    a.SET_ID(30);
+    b.SET_ID(31);
+    c.SET_ID(32);
+    
+    d.SET_ID(40);
+    e.SET_ID(41);
+    f.SET_ID(42);
+//    e.invert();
+//    f.invert();
+    //calibrate(100);
+    
+    
+        b.SET_GOAL(500);
+        c.SET_GOAL(500);
+        e.SET_GOAL(500);
+        f.SET_GOAL(500);
+        usleep(1000*100);
+        int ePOS, fPOS;
+//        while(1){
+//           ePOS = e.GET_POSISTION(); 
+//           fPOS = f.GET_POSISTION();
+//        cout << "E: " << ePOS << "\n"
+//             << "F: " << fPOS << "\n ------------------------ \n" << endl;
+//        usleep(500*100);
+//        }
+//    while(1){    
+//    for(int i=400;i<=600;i+=5){
+//        b.SET_GOAL(i);
+//        c.SET_GOAL(i);
+//        e.SET_GOAL(i);
+//        f.SET_GOAL(i);
+//        usleep(200*100);
+//    }
+//    for(int i=600;i>=400;i-=5){
+//        b.SET_GOAL(i);
+//        c.SET_GOAL(i);
+//        e.SET_GOAL(i);
+//        f.SET_GOAL(i);
+//        usleep(200*100);
+//    }
+//    }
+        
+       struct termios old_tio, new_tio;
+       unsigned char input;
+
+    /* get the terminal settings for stdin */
+    tcgetattr(STDIN_FILENO,&old_tio);
+
+    /* we want to keep the old setting to restore them a the end */
+    new_tio=old_tio;
+
+    /* disable canonical mode (buffered i/o) and local echo */
+    new_tio.c_lflag &=(~ICANON & ~ECHO);
+
+    /* set the new settings immediately */
+    tcsetattr(STDIN_FILENO,TCSANOW,&new_tio);
+
+    int rotate = 500;
+    int translate = 500;
+    int rotate1 = 500;
+    int translate1 = 500;
+    do {
+         input=getchar();
+        // printf("%d ",input);
+         switch(input){
+             
+               case 'w':
+                 translate +=10;  
+               break;
+               case 's':
+                 translate -=10;
+               break;
+               case 'a':
+                 rotate+=10;
+               break;
+               case 'd':
+                 rotate-=10;
+               break;
+               case 'i':
+                 translate1 -=10;  
+               break;
+               case 'k':
+                 translate1 +=10;
+               break;
+               case 'j':
+                 rotate1+=10;
+               break;
+               case 'l':
+                 rotate1-=10;
+               break;
+         }
+        a.SET_GOAL(rotate);
+        b.SET_GOAL(translate);
+        c.SET_GOAL(translate);
+        d.SET_GOAL(rotate1);
+        e.SET_GOAL(translate1);
+        f.SET_GOAL(translate1);
+         
+         
+         
+    } while(input!='q');
+
+    /* restore the former settings */
+    tcsetattr(STDIN_FILENO,TCSANOW,&old_tio);
+
+   // return 0;
+        
+        
+        
+        
+    int goalpos;
+    do{    
+    cin >> goalpos;
+        //a.SET_GOAL(goalpos);
+        b.SET_GOAL(goalpos);
+        c.SET_GOAL(goalpos);
+       // d.SET_GOAL(goalpos); 
+        e.SET_GOAL(goalpos);
+        f.SET_GOAL(goalpos);
+    }while(goalpos>=0);
+}
+void calibrate(int delay){
+    
+    delay*=100;
+    do{
+    for(int i=155; i<855;i+=2){
+        
+        a.SET_GOAL(i);
+        b.SET_GOAL(i);
+        c.SET_GOAL(i);
+        d.SET_GOAL(i);  
+        usleep(delay);
+        cout << a.GET_POSISTION() << endl;
+        
+    }
+    }while(!a.GET_MOVE_STATUS());
+    do{
+    for(int i=855; i>155;i-=2){
+        
+        a.SET_GOAL(i);
+        b.SET_GOAL(i);
+        c.SET_GOAL(i);
+        d.SET_GOAL(i);  
+        usleep(delay);
+        
+    }
+    }while(!a.GET_MOVE_STATUS());
+}
+
+
+    
+   
